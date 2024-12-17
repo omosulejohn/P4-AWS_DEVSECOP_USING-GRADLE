@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+    secrets-manager:
+      TOKEN: firstSecret:tokenForSonar
+      SNYKTOKEN: firstSecret:tokenForSnyk
+
+phases:
+  install:
+    runtime-versions:
+      java: latest
+
+  build:
+    commands:
+      # Grant execute permissions to the Gradle wrapper script
+      - chmod +x ./gradlew
+      
+      # Static Application Security Scan (SAST scan) using SonarCloud
+      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=testing8899 -Dsonar.projectKey=testing8899 -Dsonar.login=$TOKEN sonar
+      
+      #Software Composition Analysis Scan (SCA scan) using Snyk
+      - |-
+          export SNYK_TOKEN=$SNYKTOKEN
+          ./gradlew snyk-test
+
+#Dynamic Application Security Scan (DAST scan) using OWASP ZAP
+
+      - |-
+        apt-get update
+        apt-get -y install wget
+        apt-get -y install default-jdk
+        wget https://github.com/zaproxy/zaproxy/releases/download/v2.14.0/ZAP_2.14.0_Linux.tar.gz
+        tar -xvf ZAP_2.14.0_Linux.tar.gz
+        cd ZAP_2.14.0
+        ./zap.sh -cmd -quickurl https://www.example.com -quickprogress -quickout ../zap_report.html 
+        
+#Storing DAST Reports in S3 bucket
+
+artifacts:
+  files:
+    - zap_report.html
