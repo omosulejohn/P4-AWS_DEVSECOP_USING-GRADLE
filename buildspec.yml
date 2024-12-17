@@ -2,7 +2,7 @@ version: 0.2
 
 env:
     secrets-manager:
-      TOKEN: FirstSecret:tokenforsonars
+      TOKEN: GRADLE:sonar_gradle
       SNYK_TOKEN: SNYKSecret:snykauth
 
 phases:
