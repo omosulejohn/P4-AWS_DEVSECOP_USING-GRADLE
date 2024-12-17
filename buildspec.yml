@@ -16,7 +16,7 @@ phases:
       - chmod +x ./gradlew
       
       # Static Application Security Scan (SAST scan) using SonarCloud
-      - ./gradlew sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_gradle -Dsonar.token=$TOKEN
+      - ./gradlew build sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_gradle -Dsonar.token=$TOKEN
       - sleep 20
 
       # Quality gates for SAST
