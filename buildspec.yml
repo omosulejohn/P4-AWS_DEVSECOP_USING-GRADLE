@@ -16,15 +16,15 @@ phases:
       - chmod +x ./gradlew
       
       # Static Application Security Scan (SAST scan) using SonarCloud
-      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_testproject -Dsonar.token=$TOKEN
+      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_awstest -Dsonar.token=$TOKEN
       - sleep 5
 
       # Quality gates for SAST
       - |- 
-        quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_testproject | jq -r '.projectStatus.status')
+        quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_awstest | jq -r '.projectStatus.status')
         echo "SonarCloud analysis_status is $quality_status"; 
         if [ $quality_status = "ERROR" ] ; then exit 1;fi
-        
+
       #Software Composition Analysis Scan (SCA scan) using Snyk
       # install the latest Snyk CLI from GitHub Releases
       - latest_version=$(curl -Is "https://github.com/snyk/cli/releases/latest" | grep "^location" | sed 's#.*tag/##g' | tr -d "\r")
