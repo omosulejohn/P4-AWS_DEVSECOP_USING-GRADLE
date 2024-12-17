@@ -2,8 +2,8 @@ version: 0.2
 
 env:
     secrets-manager:
-      TOKEN: firstSecret:tokenForSonar
-      SNYKTOKEN: firstSecret:tokenForSnyk
+      TOKEN: FirstSecret:tokenforsonars
+      SNYK_TOKEN: SNYKSecret:snykauth
 
 phases:
   install:
@@ -16,14 +16,31 @@ phases:
       - chmod +x ./gradlew
       
       # Static Application Security Scan (SAST scan) using SonarCloud
-      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=testing8899 -Dsonar.projectKey=testing8899 -Dsonar.login=$TOKEN sonar
+      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_testproject -Dsonar.login=$TOKEN sonar
+
+      # Quality gates for SAST
+      - |- 
+        quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_testproject | jq -r '.projectStatus.status')
+        echo "SonarCloud analysistatus is $quality_status"; 
+        if [ $quality_status = "ERROR" ] ; then exit 1;fi
       
       #Software Composition Analysis Scan (SCA scan) using Snyk
-      - |-
-          export SNYK_TOKEN=$SNYKTOKEN
-          ./gradlew snyk-test
+      # install the latest Snyk CLI from GitHub Releases
+      - latest_version=$(curl -Is "https://github.com/snyk/cli/releases/latest" | grep "^location" | sed 's#.*tag/##g' | tr -d "\r")
+      - snyk_cli_dl_linux="https://github.com/snyk/cli/releases/download/${latest_version}/snyk-linux"
+      - curl -Lo /usr/local/bin/snyk $snyk_cli_dl_linux
+      - chmod +x /usr/local/bin/snyk
+      
+      # authenticate the Snyk CLI
+      - snyk auth $SNYK_TOKEN
+      
+      # perform a Snyk SCA scan; continue if vulnerabilities are found
+      - snyk test || true
+      
+      # upload a snapshot of the project to Snyk for continuous monitoring
+      - snyk monitor
 
-#Dynamic Application Security Scan (DAST scan) using OWASP ZAP
+      #Dynamic Application Security Scan (DAST scan) using OWASP ZAP
 
       - |-
         apt-get update
