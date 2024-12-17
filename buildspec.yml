@@ -2,7 +2,7 @@ version: 0.2
 
 env:
     secrets-manager:
-      TOKEN: GRADLE:sonar_gradle
+      TOKEN: FirstSecret:tokenforsonars
       SNYK_TOKEN: SNYKSecret:snykauth
 
 phases:
@@ -16,12 +16,12 @@ phases:
       - chmod +x ./gradlew
       
       # Static Application Security Scan (SAST scan) using SonarCloud
-      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_awstest -Dsonar.token=$TOKEN
-      - sleep 5
+      - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_gradle -Dsonar.token=$TOKEN
+      - sleep 20
 
       # Quality gates for SAST
       - |- 
-        quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_awstest | jq -r '.projectStatus.status')
+        quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_gradle | jq -r '.projectStatus.status')
         echo "SonarCloud analysis_status is $quality_status"; 
         if [ $quality_status = "ERROR" ] ; then exit 1;fi
 
