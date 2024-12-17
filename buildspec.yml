@@ -17,37 +17,14 @@ phases:
       
       # Static Application Security Scan (SAST scan) using SonarCloud
       - ./gradlew build -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=awstest -Dsonar.projectKey=awstest_testproject -Dsonar.token=$TOKEN
+      - sleep 5
 
       # Quality gates for SAST
-      #- |- 
-      #  quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_testproject | jq -r '.projectStatus.status')
-      #  echo "SonarCloud analysistatus is $quality_status"; 
-      #  if [ $quality_status = "ERROR" ] ; then exit 1;fi
-      
-      # Fetch SonarCloud Quality Gate status
-      - echo "Fetching SonarCloud Quality Gate status..."
-      - |-
-        # Fetch SonarCloud project status
-        response=$(curl -s -u "$TOKEN:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_testproject")
-        quality_status=$(echo "$response" | jq -r '.projectStatus.status')
-
-        # Check if the response is valid
-        if [ -z "$quality_status" ] || [ "$quality_status" = "null" ]; then
-          echo "Error: Unable to fetch SonarCloud Quality Gate status. Check TOKEN or projectKey."
-          exit 1
-        fi
-
-        # Output the quality gate status
-        echo "SonarCloud Quality Gate Status: $quality_status"
-
-        # Check if the quality gate failed
-        if [ "$quality_status" = "ERROR" ]; then
-          echo "SonarCloud Quality Gate FAILED. Halting the pipeline."
-          exit 1
-        else
-          echo "SonarCloud Quality Gate PASSED. Proceeding with the pipeline."
-        fi
-
+      - |- 
+        quality_status=$(curl -s -u $TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=awstest_testproject | jq -r '.projectStatus.status')
+        echo "SonarCloud analysis_status is $quality_status"; 
+        if [ $quality_status = "ERROR" ] ; then exit 1;fi
+        
       #Software Composition Analysis Scan (SCA scan) using Snyk
       # install the latest Snyk CLI from GitHub Releases
       - latest_version=$(curl -Is "https://github.com/snyk/cli/releases/latest" | grep "^location" | sed 's#.*tag/##g' | tr -d "\r")
